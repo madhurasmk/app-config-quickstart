@@ -1,0 +1,42 @@
+from azure.appconfiguration import AzureAppConfigurationClient
+from azure.identity import DefaultAzureCredential
+from azure.appconfiguration import FeatureFlagConfigurationSetting
+import os
+
+connection_string = os.environ.get("AZURE_APPCONFIG_RW")
+client = AzureAppConfigurationClient.from_connection_string(connection_string)
+
+# Specify the label explicitly
+feature = client.get_configuration_setting(
+    key=".appconfig.featureflag/Assistants", 
+    label=None  # important!
+    
+)
+
+ 
+ 
+#  Enable or disable the feature
+feature.enabled = True  # or False to disable
+# feature.label = "Assistants Label"  # optional
+# fdel = input("Enter the feature flag name to delete: ").strip()
+
+# # Feature flag keys must include the prefix
+# feature_flag_key = f".appconfig.featureflag/{fdel}"
+
+# # Delete by key and (optional) label
+# client.delete_configuration_setting(key=feature_flag_key) ## , label=None (optional)
+# print(f"Feature {fdel} deleted")
+  
+
+client.set_configuration_setting(feature)
+settings = client.list_configuration_settings(key_filter=".appconfig.featureflag/*")
+
+for s in settings:
+    if s.content_type and s.content_type.startswith("application/vnd.microsoft.appconfig.ff+json"):
+        try:
+            feature_flag = FeatureFlagConfigurationSetting.deserialize(s)
+            print(f"Key: {feature_flag.key}, \nEnabled: {feature_flag.enabled}") # Label: {feature_flag.label},
+        except Exception as e:
+            print(f"Error parsing feature flag {s.key}: {e}")
+    # else:
+    #     print(f"Skipping non-feature flag: {s.key}")

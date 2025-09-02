@@ -1,0 +1,136 @@
+// 16-Jul-2025 
+// Added user authentication 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure App Config Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .main-container {
+    display: flex;
+}
+        h1, h2 { color: #333; }
+        form { margin-bottom: 20px; padding: 10px;  width: 400px; }
+        label { display: block; margin-top: 10px;}
+        input[type="text"], select { width: 80%; padding: 5px; margin-left:75px; }
+        input[type="password"], select { width: 80%; padding: 5px; margin-left:75px;}
+        button { margin-top: 20px; padding: 5px 10px; margin-left:90px;width: 80px;background-color: #007bff; height:30px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 5px 0; }
+        select { width: 93%; padding: 5px; }
+        .card {background-color: #90c4e7ff; margin-left: 200px; padding: 20px; margin-bottom: 0px; width:450px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        .card-container { display: grid; grid-template-columns: repeat(2, 1fr); /* 2 equal columns */
+            gap: 15px; max-width: 900px; margin: 0 auto; padding: 20px;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #aed2f0ff;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            margin-top:100px;
+            box-sizing: border-box;
+            height: 100%;
+            height: 80vh; /* Full height */
+            position: fixed; /* Stick to the left */
+            margin-left:100px;
+            overflow-x: hidden; overflow-y: auto; 
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            display: block;
+            padding: 8px 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .sidebar a.active {
+            background-color: #007bff;
+            color: white;
+        }
+        h5{font-size: 16px;            }
+        .inputFields{
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+        }
+        .labelFmt {
+            width: 20px; /* Adjust width as needed */
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">       
+    <div style="width: 900px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-left:10% ">Login to Azure App Configuration Manager </h1>
+
+    <div class="card-container">
+        <div class="card admin-only" id="setFeatureCard">
+            <h2 style="text-align: center">Login</h2>
+            <form id="loginForm"> 
+            <div class="inputFields">
+                <label for="username" class="labelFmt">Username</label> 
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="inputFields">
+                <label for="password" class="labelFmt">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+                <button type="button" onclick="login()">Login</button>
+                <button type="button" onclick="clearForm()">Clear</button>
+                <br><br>
+                <div id="responseMessageSet" style="color: red;"></div>
+            </form>
+        </div>        
+    </div>
+    <script>
+        function login(){
+            const uname = document.getElementById("username").value;
+            const pword = document.getElementById("password").value;
+            
+           /* if(uname === "admin" && pword === "admin123"){
+                window.location.href = "/features"  //"indexFeature.html"; // Redirect to the main page
+            } else {
+                document.getElementById("responseMessageSet").innerText = "Invalid username or password.";
+            } */
+            if(uname === "admin" && pword === "admin123"){
+                window.location.href = "/features?role=admin"  //"indexFeature.html"; // Redirect to the main page
+            } else if (uname === "user" && pword === "user123") {
+                window.location.href = "/features?role=user";
+            } else {
+                document.getElementById("responseMessageSet").innerText = "Invalid username or password.";
+            } 
+        }
+        function clearForm() {
+            document.getElementById("loginForm").reset();
+
+            // Following lines can also be used to clear the response message and input fields
+            /*document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("responseMessageSet").innerText = ""; */
+            
+        }
+    </script>
+    
+</body>
+</html>

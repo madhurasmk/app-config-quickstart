@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure App Config Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        form { margin-bottom: 20px; padding: 10px;  width: 400px; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"], select { width: 90%; padding: 5px; }
+        button { margin-top: 10px; padding: 5px 10px; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 5px 0; }
+        select { width: 93%; padding: 5px; }
+        .card {background-color: #90c4e7ff; padding: 20px; margin-bottom: 0px; width:450px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        .card-container { display: grid; grid-template-columns: repeat(2, 1fr); /* 2 equal columns */
+            gap: 15px; max-width: 1100px; margin: 0 auto; padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div style="width: 900px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-left:20% ">Azure App Configuration Manager</h1>
+
+    <!-- h2>Feature Flags</h2>
+    <ul>
+        {% for flag in flags %}
+            <li><strong>{{ flag.id }}</strong>: {{ "Enabled" if flag.enabled else "Disabled" }}</li>
+        {% else %}
+            <li>No feature flags found.</li>
+        {% endfor %}
+    </ul -->
+
+    <hr style="border: 1px solid #ccc; margin: 2% ; width: 110%;">
+    <div class="card-container">
+        <div class="card">
+            <h2>Set Config Key/Value</h2>
+            <form id="setFeatureForm">
+                <label for="setKey">Key:</label>
+                <input type="text" id="setKey" name="key" required>
+
+                <label for="setValue">Value:</label>
+                <input type="text" id="setValue" name="value" required>
+
+                <button type="submit">Set Feature</button>
+                <br><br>
+                <div id="responseMessageSet" style="color: green;"></div>
+            </form>
+        </div>
+        <div class="card">
+            <h2>Add Config Key</h2>
+            <form id="addFeatureForm">
+                <label for="addKey">Key to add:</label>
+                <input type="text" id="addKey" name="key" required>
+                <button type="submit">Add Feature</button>
+                <br><br>
+                <div id="responseMessageAdd" style="color: green;"></div>
+            </form>
+        </div>
+        
+    </div>
+<div class="card-container">  
+    <div class="card">
+        <h2>Delete Config Key</h2>
+        <form id="deleteFeatureForm">
+            <label for="deleteKey">Key to delete:</label>
+            <input type="text" id="deleteKey" name="key" required>
+            <button type="submit">Delete Feature</button>
+            <br><br>
+            <div id="responseMessageDel" style="color: green;"></div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Toggle Feature Flag</h2>
+        <form id="toggleFeatureForm">
+            <label for="toggleFlag">Feature Flag Name:</label>
+            <input type="text" id="toggleFlag" name="flag" required placeholder="e.g. Messages">
+
+            <label for="toggleEnable">Enable?</label>
+            <select id="toggleEnable" name="enable" required >
+                <option value="true" selected>Enable</option>
+                <option value="false">Disable</option>
+            </select>
+            <button type="submit">Toggle Feature</button>
+            <br><br>
+            <div id="responseMessageToggle" class="response-box" style="color: green;"></div>
+        </form>
+    </div>
+</div>
+<div class="card-container">  
+    <div class="card">
+            <h2>Get Config Key/Value</h2>
+            <form id="getFeatureForm">
+                <label for="getFeature">Key to get:</label>
+                <input type="text" id="getFeature" name="key">
+                <button type="submit">Retrieve Feature</button>
+                <br><br>
+                <div id="responseMessageGet" style="color: green;"></div>
+            </form>
+        </div>
+     <div class="card">
+            <h2>Get Feature Flag Status</h2>
+            <form id="getFeatureFlagStatusForm">
+                <label for="getFeatureFlag">Feature Flag Name:</label>
+                <input type="text" id="getFeatureFlag" name="key" required placeholder="e.g. Messages">
+                <button type="submit">Retrieve Status</button>
+                <br><br>
+                <div id="responseMessageGetFlag" style="color: green;"></div>
+            </form>
+        </div>
+</div>
+
+
+    <script>
+        // Helper function to make GET requests and show response
+        function formatObject(obj) {
+            let html = "";
+            for (let key in obj) {
+                const value = obj[key];
+                if (typeof value === 'object' && value !== null) {
+                    html += `<strong>${key}</strong>:<pre>${JSON.stringify(value, null, 2)}</pre>`;
+                } else {
+                    html += `<strong>${key}</strong>: ${value}<br>`;
+                }
+            }
+            return html;
+        }
+
+        // Helper function to make POST requests and show response
+        async function sendGetRequest(url, responseElementId) {
+            const response = await fetch(url);
+            const responseMessage = document.getElementById(responseElementId);
+            const data = await response.json();
+            
+             if (data.error) {
+                responseMessage.innerHTML = `<span style="color: red;">❌ Error: ${data.error}</span>`;
+            } else {
+                let html = "";
+
+                // If data is an array (like feature: [{...}, {...}])
+                if (Array.isArray(data.feature)) {
+                    data.feature.forEach(item => {
+                        html += `<div style="margin-bottom:10px;">${formatObject(item)}</div>`;
+                    });
+                } else if (typeof data.feature === 'object') {
+                    html = formatObject(data);
+                } else {
+                    // Fallback: simple key-value
+                    for (let key in data) {
+                        html += `<strong>${key}</strong>: ${data[key]}<br>`;
+                    }
+                }
+
+                responseMessage.innerHTML = html;
+            }
+            //responseMessage.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Set Feature form submit handler
+        document.getElementById('setFeatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const key = this.key.value.trim();
+            const value = this.value.value.trim();
+            if (key && value) {
+                sendGetRequest(`/setFeature?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}`, "responseMessageSet" );
+                
+            }
+        });
+
+        // Delete Feature form submit handler
+        document.getElementById('deleteFeatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const key = this.key.value.trim();
+            if (key) {
+                sendGetRequest(`/deleteFeature?key=${encodeURIComponent(key)}`, "responseMessageDel");
+            }
+        });
+
+         // Add Feature form submit handler
+        document.getElementById('addFeatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const key = this.key.value.trim();
+            if (key) {
+                sendGetRequest(`/addFeature?key=${encodeURIComponent(key)}`, "responseMessageAdd");
+            }
+        });
+         // Get Feature form submit handler
+        document.getElementById('getFeatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            //const key = this.key.value.trim();
+            //if (key) {
+            sendGetRequest(`/getFeature`, "responseMessageGet"); //?key=${encodeURIComponent(key)}
+            //}
+        });
+        document.getElementById('getFeatureFlagStatusForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const key = this.key.value.trim();
+            if (key) {
+                sendGetRequest(`/getFeatureFlagStatus?key=${encodeURIComponent(key)}`, "responseMessageGetFlag");
+            }
+        });
+        // Toggle Feature form submit handler
+        document.getElementById('toggleFeatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const flag = this.flag.value.trim();
+            const enable = this.enable.value;
+            if (flag) {
+                sendGetRequest(`/toggle?flag=${encodeURIComponent(flag)}&enable=${enable}`, "responseMessageToggle");
+            }
+        });
+    </script>
+</body>
+</html>

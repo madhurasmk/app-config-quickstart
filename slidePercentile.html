@@ -1,0 +1,49 @@
+<body class="m-0" style="overflow-x: hidden;">
+	<style>
+		#percentile-slide-wrapper {
+			transition: transform 0.3s ease;
+		}
+	</style> `
+
+	<div id="timeSpentWrapper" class="d-flex flex-column">
+		<div id="percentile-slide-wrapper" class="position-absolute top-0 end-0">
+			<div id="percentile-container" class="percentile-radios d-flex justify-content-end">
+				@foreach (var percentile in new[] { 90, 50, 10, 0 })
+				{
+					<div class="radio-container me-2 mb-2">
+						<input type="radio"
+							   id="percentile-@percentile"
+							   name="percentile"
+							   value="@percentile" />
+						<label for="percentile-@percentile" class="custom-radio px-1 rounded">
+							<span class="radio-label">@Html.Raw(percentile > 0 ? percentile + "<sup>th</sup> Percentile" : "All")</span>
+						</label>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+
+	<!-- Buttons to control slide -->
+	<div class="mt-5">
+		<button id="slideLeftBtn" class="btn btn-primary">Slide Left</button>
+		<button id="slideRightBtn" class="btn btn-secondary">Slide Right</button>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		// Slide left when left button clicked
+		$('#slideLeftBtn').on('click', function () {
+			$('#percentile-slide-wrapper').css({
+				'transform': 'translateX(-250px)'
+			});
+		});
+
+		// Slide right when right button clicked
+		$('#slideRightBtn').on('click', function () {
+			$('#percentile-slide-wrapper').css({
+				'transform': 'translateX(0)'
+			});
+		});
+	</script>
+</body>
